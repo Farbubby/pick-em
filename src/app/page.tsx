@@ -16,23 +16,8 @@ import { useState } from "react";
 
 export default function Home() {
   const [submitted, setSubmitted] = useState(false);
-  const [itemCount, setItemCount] = useState(0);
-
-  const formList = Array.from({ length: itemCount }, (_, i) => (
-    <div key={i} className="flex flex-row gap-10 items-center">
-      <div className="font-bold">{i + 1}.</div>
-      <div className="w-full flex flex-row gap-5">
-        <div className="flex flex-col gap-2">
-          <Label>Item</Label>
-          <Input type="text" placeholder="Name" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label>Amount</Label>
-          <Input type="number" placeholder="10" />
-        </div>
-      </div>
-    </div>
-  ));
+  const [itemCount, setItemCount] = useState("");
+  const [error, setError] = useState("");
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
@@ -42,8 +27,25 @@ export default function Home() {
         </div>
         <form
           className="flex flex-row gap-4 w-full justify-center items-center"
+          noValidate
           onSubmit={(e) => {
             e.preventDefault();
+
+            if (!itemCount || isNaN(parseInt(itemCount))) {
+              setError("Please enter a valid number.");
+              setSubmitted(false);
+              return;
+            }
+
+            if (parseInt(itemCount) <= 0 || parseInt(itemCount) > 100) {
+              setError(
+                "Please enter a valid number greater than 0 and less than 100."
+              );
+              setSubmitted(false);
+              return;
+            }
+
+            setError("");
             setSubmitted(true);
           }}>
           <input
@@ -51,7 +53,11 @@ export default function Home() {
             name="itemCount"
             id="itemCount"
             className="rounded-lg p-2 border border-gray-300 drop-shadow-lg w-1/2"
-            onChange={(e) => setItemCount(parseInt(e.target.value))}
+            onChange={(e) => {
+              setItemCount(e.target.value);
+              setSubmitted(false);
+              setError("");
+            }}
           />
           <button
             type="submit"
@@ -71,6 +77,7 @@ export default function Home() {
             </svg>
           </button>
         </form>
+        {error && <div className="text-red-400 font-bold">{error}</div>}
         {submitted && (
           <Dialog>
             <DialogTrigger asChild>
@@ -88,7 +95,21 @@ export default function Home() {
                 onSubmit={(e) => {
                   e.preventDefault();
                 }}>
-                {formList}
+                {Array.from({ length: parseInt(itemCount) }, (_, i) => (
+                  <div key={i} className="flex flex-row gap-10 items-center">
+                    <div className="font-bold">{i + 1}.</div>
+                    <div className="w-full flex flex-row gap-5">
+                      <div className="flex flex-col gap-2">
+                        <Label>Item</Label>
+                        <Input type="text" placeholder="Name" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label>Amount</Label>
+                        <Input type="number" placeholder="10" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
                 <DialogFooter>
                   <Button type="submit">Save changes</Button>
                 </DialogFooter>
