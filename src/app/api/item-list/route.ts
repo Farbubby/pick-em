@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
-import { addItems, getItemListById } from "@/lib/operations";
+import { supabase } from "@/lib/supabase";
 
 const schema = z.record(z.string().min(1, "One of the fields is empty"));
 
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   const token = crypto.getRandomValues(new Uint8Array(16)).join("");
-  const link = `http://localhost:3000/room/${token}`;
+  const link = `${process.env.NEXT_PUBLIC_URL}/room/${token}`;
 
   const num = Object.keys(data).length / 2;
   const items = [];
@@ -35,10 +35,11 @@ export async function POST(req: NextRequest) {
     items[i] = {
       name: data[`item-${i}`],
       amount: data[`amount-${i}`],
+      room: token,
     };
   }
 
-  await addItems({ id: token, items });
+  await supabase.from("item").insert([...items]);
 
   return NextResponse.json({
     status: 200,
@@ -53,9 +54,9 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const { searchParams } = url;
 
-  const id = searchParams.get("id");
+  const room = searchParams.get("room");
 
-  const data = await getItemListById(id as string);
+  const { data } = await supabase.from("item").select("*").eq("room", room);
 
   if (!data) {
     return NextResponse.json({
