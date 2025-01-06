@@ -24,26 +24,26 @@ export default function Home() {
   const handleSubmit = async (formData: FormData) => {
     const data = Object.fromEntries(formData.entries());
 
-    const response = await fetch("/api/item-list", {
+    const res = await fetch("/api/item-list", {
       method: "POST",
       body: JSON.stringify({
         data,
       }),
     });
 
-    const val = (await response.json()) as {
+    const response = (await res.json()) as {
       status: number;
       result: { error?: string; link?: string; success?: string };
     };
 
-    if (val.result.error) {
-      setFormError(val.result.error);
+    if (response.result.error) {
+      setFormError(response.result.error);
       setLink("");
       return;
     }
 
-    if (val.result.link) {
-      setLink(val.result.link);
+    if (response.result.link) {
+      setLink(response.result.link);
     }
 
     setFormError("");

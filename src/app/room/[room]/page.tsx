@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { parse } from "path";
 import { useEffect, useState } from "react";
 
 export default function Home({
@@ -47,14 +54,33 @@ export default function Home({
     return <div>Loading...</div>;
   }
 
-  console.log(list, 1234);
-
   const listElement = list.map((item, index) => (
-    <div key={index} className="flex flex-row gap-4">
-      <div>{item.name}</div>
-      <div>{item.amount}</div>
-    </div>
+    <Accordion
+      key={index}
+      type="single"
+      collapsible
+      className="bg-white shadow-md mx-60 px-4">
+      <AccordionItem value="lol">
+        <AccordionTrigger>
+          <div className="font-bold text-xl flex flex-row justify-between w-full px-4">
+            <div>{item.name}</div>
+            {parseInt(item.amount) > 0 ? (
+              <>
+                <div>(x{item.amount})</div>
+              </>
+            ) : (
+              <>EMPTY</>
+            )}
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="font-bold text-lg">Hi</AccordionContent>
+      </AccordionItem>
+    </Accordion>
   ));
 
-  return <>{listElement}</>;
+  return (
+    <>
+      <div className="flex flex-col w-full">{listElement}</div>
+    </>
+  );
 }
