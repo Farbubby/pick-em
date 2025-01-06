@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
-import { addItems } from "@/lib/operations";
+import { addItems, getItemListById } from "@/lib/operations";
 
 const schema = z.record(z.string().min(1, "One of the fields is empty"));
 
@@ -45,6 +45,32 @@ export async function POST(req: NextRequest) {
     result: {
       success: "Success",
       link,
+    },
+  });
+}
+
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const { searchParams } = url;
+
+  const id = searchParams.get("id");
+
+  const data = await getItemListById(id as string);
+
+  if (!data) {
+    return NextResponse.json({
+      status: 404,
+      result: {
+        error: "Not found",
+      },
+    });
+  }
+
+  return NextResponse.json({
+    status: 200,
+    result: {
+      success: "Success",
+      data,
     },
   });
 }
