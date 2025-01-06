@@ -18,6 +18,36 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const [itemCount, setItemCount] = useState("");
   const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
+  const [link, setLink] = useState("");
+
+  const handleSubmit = async (formData: FormData) => {
+    const data = Object.fromEntries(formData.entries());
+
+    const response = await fetch("/api/item-list", {
+      method: "POST",
+      body: JSON.stringify({
+        data,
+      }),
+    });
+
+    const val = (await response.json()) as {
+      status: number;
+      result: { error?: string; link?: string; success?: string };
+    };
+
+    if (val.result.error) {
+      setFormError(val.result.error);
+      setLink("");
+      return;
+    }
+
+    if (val.result.link) {
+      setLink(val.result.link);
+    }
+
+    setFormError("");
+  };
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
@@ -57,6 +87,8 @@ export default function Home() {
               setItemCount(e.target.value);
               setSubmitted(false);
               setError("");
+              setFormError("");
+              setLink("");
             }}
           />
           <button
@@ -81,7 +113,9 @@ export default function Home() {
         {submitted && (
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">List your items</Button>
+              <Button variant="outline" className="drop-shadow-lg">
+                List your items
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
@@ -94,6 +128,8 @@ export default function Home() {
                 className="flex flex-col gap-4"
                 onSubmit={(e) => {
                   e.preventDefault();
+                  const formData = new FormData(e.target as HTMLFormElement);
+                  handleSubmit(formData);
                 }}>
                 {Array.from({ length: parseInt(itemCount) }, (_, i) => (
                   <div key={i} className="flex flex-row gap-10 items-center">
@@ -101,17 +137,57 @@ export default function Home() {
                     <div className="w-full flex flex-row gap-5">
                       <div className="flex flex-col gap-2">
                         <Label>Item</Label>
-                        <Input type="text" placeholder="Name" />
+                        <Input
+                          id={`item-${i}`}
+                          name={`item-${i}`}
+                          type="text"
+                          placeholder="Name"
+                          onChange={() => {
+                            setFormError("");
+                            setLink("");
+                          }}
+                        />
                       </div>
                       <div className="flex flex-col gap-2">
                         <Label>Amount</Label>
-                        <Input type="number" placeholder="10" />
+                        <Input
+                          id={`amount-${i}`}
+                          name={`amount-${i}`}
+                          type="number"
+                          placeholder="10"
+                          onChange={() => {
+                            setFormError("");
+                            setLink("");
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
                 ))}
+                {formError && (
+                  <div className="text-red-400 font-bold text-center">
+                    {formError}
+                  </div>
+                )}
+                {link && (
+                  <>
+                    <div className="font-bold text-center">
+                      Click this{" "}
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-green-400">
+                        {"link"}
+                      </a>
+                      <div className="text-black font-bold text-center">
+                        Share this link with your friends!
+                      </div>
+                    </div>
+                  </>
+                )}
                 <DialogFooter>
-                  <Button type="submit">Save changes</Button>
+                  <Button type="submit">Submit</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
