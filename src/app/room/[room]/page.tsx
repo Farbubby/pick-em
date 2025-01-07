@@ -6,8 +6,19 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { parse } from "path";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export default function Home({
   params,
@@ -22,10 +33,45 @@ export default function Home({
       room: string;
     }[]
   >([]);
+  const [room, setRoom] = useState("");
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+
+  const handleAdd = async (formData: FormData) => {
+    const data = Object.fromEntries(formData.entries());
+    data["room"] = room;
+
+    const res = await fetch("/api/item", {
+      method: "POST",
+      body: JSON.stringify({
+        data,
+      }),
+    });
+
+    const response = (await res.json()) as {
+      status: number;
+      result: { error?: string; success?: string };
+    };
+
+    if (response.result.error) {
+      setError(response.result.error);
+      setSuccess("");
+      console.log(response.result.error);
+      return;
+    }
+
+    if (response.result.success) {
+      setSuccess(response.result.success);
+      console.log(response.result.success);
+    }
+
+    setError("");
+  };
 
   useEffect(() => {
     async function getId() {
       const room = (await params).room;
+      setRoom(room);
 
       const res = await fetch(`/api/item-list?room=${room}`);
 
@@ -73,14 +119,156 @@ export default function Home({
             )}
           </div>
         </AccordionTrigger>
-        <AccordionContent className="font-bold text-lg">Hi</AccordionContent>
+        <AccordionContent className="font-bold text-base px-4 flex flex-col gap-2">
+          <div className="italic border-b">People bringing it</div>
+          <div className="text-sm grid grid-rows-3 grid-flow-col gap-2">
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+            <div>Hi</div>
+          </div>
+        </AccordionContent>
       </AccordionItem>
     </Accordion>
   ));
 
   return (
     <>
-      <div className="flex flex-col w-full">{listElement}</div>
+      <div className="flex flex-col gap-10">
+        <div className="flex flex-col w-full mt-20">{listElement}</div>
+        <div className="w-full flex flex-row justify-center gap-5">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">Add</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Want to bring something?</DialogTitle>
+                <DialogDescription>
+                  Add how much of the item you want to bring and add your name.
+                </DialogDescription>
+              </DialogHeader>
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target as HTMLFormElement);
+                  handleAdd(formData);
+                }}>
+                <div className="w-full flex flex-row gap-5">
+                  <div className="flex flex-col gap-2">
+                    <Label>Item</Label>
+                    <Input
+                      id={`item`}
+                      name={`item`}
+                      type="text"
+                      placeholder="Potato"
+                      onChange={() => {
+                        setError("");
+                        setSuccess("");
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Amount</Label>
+                    <Input
+                      id={`amount`}
+                      name={`amount`}
+                      type="number"
+                      placeholder="10"
+                      onChange={() => {
+                        setError("");
+                        setSuccess("");
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Name</Label>
+                    <Input
+                      id={`name`}
+                      name={`name`}
+                      type="text"
+                      placeholder="Person"
+                      onChange={() => {
+                        setError("");
+                        setSuccess("");
+                      }}
+                    />
+                  </div>
+                </div>
+                {error && (
+                  <div className="text-red-400 font-bold text-center">
+                    {error}
+                  </div>
+                )}
+                {success && (
+                  <div className="text-green-400 font-bold text-center">
+                    {success}
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button type="submit">Add it</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">Remove</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Don't want to bring it anymore?</DialogTitle>
+                <DialogDescription>
+                  Mention the item you don't want to bring anymore and add your
+                  name.
+                </DialogDescription>
+              </DialogHeader>
+              <form className="flex flex-col gap-4">
+                <div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Item</Label>
+                    <Input
+                      id={`item`}
+                      name={`item`}
+                      type="text"
+                      placeholder="Potato"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Name</Label>
+                    <Input
+                      id={`name`}
+                      name={`name`}
+                      type="text"
+                      placeholder="Person"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Remove it</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
     </>
   );
 }
