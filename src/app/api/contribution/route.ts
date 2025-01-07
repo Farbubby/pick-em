@@ -51,6 +51,17 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const diff = parseInt(item.data?.[0].amount) - parseInt(data.amount);
+
+  if (diff < 0) {
+    return NextResponse.json({
+      status: 400,
+      result: {
+        error: "Can't contribute more than the item amount currently",
+      },
+    });
+  }
+
   await supabase.from("person").insert([
     {
       name: data.name,
@@ -59,6 +70,12 @@ export async function POST(req: NextRequest) {
       room: data.room,
     },
   ]);
+
+  await supabase
+    .from("item")
+    .update({ amount: diff })
+    .eq("name", data.item)
+    .eq("room", data.room);
 
   return NextResponse.json({
     status: 200,
@@ -119,6 +136,15 @@ export async function DELETE(req: NextRequest) {
       },
     });
   }
+
+  const total =
+    parseInt(item.data?.[0].amount) + parseInt(person.data?.[0].amount);
+
+  await supabase
+    .from("item")
+    .update({ amount: total })
+    .eq("name", data.item)
+    .eq("room", data.room);
 
   await supabase
     .from("person")

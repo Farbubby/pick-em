@@ -71,6 +71,7 @@ export default function Home({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contribution", room] });
+      queryClient.invalidateQueries({ queryKey: ["item-list", room] });
     },
   });
 
@@ -91,6 +92,7 @@ export default function Home({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contribution", room] });
+      queryClient.invalidateQueries({ queryKey: ["item-list", room] });
     },
   });
 
