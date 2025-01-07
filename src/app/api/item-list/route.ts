@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   const token = crypto.getRandomValues(new Uint8Array(16)).join("");
-  const link = `${process.env.NEXT_PUBLIC_URL}/room/${token}`;
+  const link = `${process.env.NEXT_LOCAL_URL}/room/${token}`;
 
   const num = Object.keys(data).length / 2;
   const items = [];

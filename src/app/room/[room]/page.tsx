@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import ContributionList from "@/components/contribution-list";
 
 export default function Home({
   params,
@@ -43,7 +44,7 @@ export default function Home({
     const data = Object.fromEntries(formData.entries());
     data["room"] = room;
 
-    const res = await fetch("/api/item", {
+    const res = await fetch("/api/contribution", {
       method: "POST",
       body: JSON.stringify({
         data,
@@ -74,7 +75,7 @@ export default function Home({
     const data = Object.fromEntries(formData.entries());
     data["room"] = room;
 
-    const res = await fetch("/api/item", {
+    const res = await fetch("/api/contribution", {
       method: "DELETE",
       body: JSON.stringify({
         data,
@@ -155,22 +156,7 @@ export default function Home({
         <AccordionContent className="font-bold text-base px-4 flex flex-col gap-2">
           <div className="italic border-b">People bringing it</div>
           <div className="text-sm grid grid-rows-3 grid-flow-col gap-2">
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
-            <div>Hi</div>
+            <ContributionList room={room} item={item.name} />
           </div>
         </AccordionContent>
       </AccordionItem>

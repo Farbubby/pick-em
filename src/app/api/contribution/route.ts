@@ -134,3 +134,34 @@ export async function DELETE(req: NextRequest) {
     },
   });
 }
+
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const { searchParams } = url;
+
+  const item = searchParams.get("item");
+  const room = searchParams.get("room");
+
+  const { data } = await supabase
+    .from("person")
+    .select("*")
+    .eq("item", item)
+    .eq("room", room);
+
+  if (!data) {
+    return NextResponse.json({
+      status: 404,
+      result: {
+        error: "Not found",
+      },
+    });
+  }
+
+  return NextResponse.json({
+    status: 200,
+    result: {
+      success: "Success",
+      data,
+    },
+  });
+}
