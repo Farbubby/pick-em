@@ -20,100 +20,28 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import ContributionList from "@/components/contribution-list";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 
 export default function Home({
   params,
 }: {
   params: Promise<{ room: string }>;
 }) {
-  const [list, setList] = useState<
-    {
-      id: string;
-      name: string;
-      amount: string;
-      room: string;
-    }[]
-  >([]);
+  const queryClient = useQueryClient();
+
   const [room, setRoom] = useState("");
   const [success1, setSuccess1] = useState("");
   const [error1, setError1] = useState("");
   const [success2, setSuccess2] = useState("");
   const [error2, setError2] = useState("");
 
-  const handleAdd = async (formData: FormData) => {
-    const data = Object.fromEntries(formData.entries());
-    data["room"] = room;
-
-    const res = await fetch("/api/contribution", {
-      method: "POST",
-      body: JSON.stringify({
-        data,
-      }),
-    });
-
-    const response = (await res.json()) as {
-      status: number;
-      result: { error?: string; success?: string };
-    };
-
-    if (response.result.error) {
-      setError1(response.result.error);
-      setSuccess1("");
-      console.log(response.result.error);
-      return;
-    }
-
-    if (response.result.success) {
-      setSuccess1(response.result.success);
-      console.log(response.result.success);
-    }
-
-    setError1("");
-  };
-
-  const handleDelete = async (formData: FormData) => {
-    const data = Object.fromEntries(formData.entries());
-    data["room"] = room;
-
-    const res = await fetch("/api/contribution", {
-      method: "DELETE",
-      body: JSON.stringify({
-        data,
-      }),
-    });
-
-    const response = (await res.json()) as {
-      status: number;
-      result: { error?: string; success?: string };
-    };
-
-    if (response.result.error) {
-      setError2(response.result.error);
-      setSuccess2("");
-      console.log(response.result.error);
-      return;
-    }
-
-    if (response.result.success) {
-      setSuccess2(response.result.success);
-      console.log(response.result.success);
-    }
-
-    setError2("");
-  };
-
-  useEffect(() => {
-    async function getId() {
-      const room = (await params).room;
-      setRoom(room);
-
+  const listQuery = useQuery({
+    queryKey: ["item-list", room],
+    queryFn: async () => {
       const res = await fetch(`/api/item-list?room=${room}`);
-
-      const response = (await res.json()) as {
+      const data = (await res.json()) as {
         status: number;
         result: {
-          error?: string;
-          success?: string;
           data: {
             id: string;
             name: string;
@@ -122,19 +50,67 @@ export default function Home({
           }[];
         };
       };
+      return data.result.data;
+    },
+  });
 
-      if (response.result.data) {
-        setList(response.result.data);
-      }
+  const addMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const data = Object.fromEntries(formData.entries());
+      data["room"] = room;
+      const res = await fetch("/api/contribution", {
+        method: "POST",
+        body: JSON.stringify({
+          data,
+        }),
+      });
+      return (await res.json()) as {
+        status: number;
+        result: { error?: string; success?: string };
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contribution", room] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const data = Object.fromEntries(formData.entries());
+      data["room"] = room;
+      const res = await fetch("/api/contribution", {
+        method: "DELETE",
+        body: JSON.stringify({
+          data,
+        }),
+      });
+      return (await res.json()) as {
+        status: number;
+        result: { error?: string; success?: string };
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contribution", room] });
+    },
+  });
+
+  useEffect(() => {
+    async function getRoom() {
+      const room = (await params).room;
+      setRoom(room);
     }
-    getId();
+    getRoom();
   }, [params]);
 
-  if (list.length === 0) {
+  if (listQuery.isLoading) {
     return <div>Loading...</div>;
   }
 
-  const listElement = list.map((item, index) => (
+  if (listQuery.data?.length === 0) {
+    return <div>No items</div>;
+  }
+
+  const listElement = listQuery.data?.map((item, index) => (
     <Accordion
       key={index}
       type="single"
@@ -184,7 +160,19 @@ export default function Home({
                 onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.target as HTMLFormElement);
-                  handleAdd(formData);
+                  addMutation.mutate(formData);
+
+                  if (addMutation.data?.result.error) {
+                    setError1(addMutation.data.result.error);
+                    setSuccess1("");
+                    return;
+                  }
+
+                  if (addMutation.data?.result.success) {
+                    setSuccess1("Success");
+                  }
+
+                  setError1("");
                 }}>
                 <div className="w-full flex flex-row gap-5">
                   <div className="flex flex-col gap-2">
@@ -251,10 +239,10 @@ export default function Home({
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Don't want to bring it anymore?</DialogTitle>
+                <DialogTitle>Don&apos;t want to bring it anymore?</DialogTitle>
                 <DialogDescription>
-                  Mention the item you don't want to bring anymore and add your
-                  name.
+                  Mention the item you don&apos;t want to bring anymore and add
+                  your name.
                 </DialogDescription>
               </DialogHeader>
               <form
@@ -262,7 +250,19 @@ export default function Home({
                 onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.target as HTMLFormElement);
-                  handleDelete(formData);
+                  deleteMutation.mutate(formData);
+
+                  if (deleteMutation.data?.result.error) {
+                    setError2(deleteMutation.data.result.error);
+                    setSuccess2("");
+                    return;
+                  }
+
+                  if (deleteMutation.data?.result.success) {
+                    setSuccess2(deleteMutation.data.result.success);
+                  }
+
+                  setError2("");
                 }}>
                 <div>
                   <div className="flex flex-col gap-2">
