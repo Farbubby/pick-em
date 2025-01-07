@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Home({ room, item }: { room: string; item: string }) {
-  const [list, setList] = useState<
-    { id: string; name: string; item: string; amount: string; room: string }[]
-  >([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
+  const { data } = useQuery({
+    queryKey: ["contribution", room, item],
+    queryFn: async () => {
       const res = await fetch(`/api/contribution?room=${room}&item=${item}`);
       const data = (await res.json()) as {
         status: number;
@@ -23,21 +20,17 @@ export default function Home({ room, item }: { room: string; item: string }) {
         };
       };
 
-      if (data.result.data) {
-        setList(data.result.data);
-      }
-    };
+      return data.result.data;
+    },
+  });
 
-    fetchData();
-  }, [room, item]);
-
-  if (list.length <= 0) {
+  if ((data?.length as number) <= 0) {
     return <div>No one so far</div>;
   }
 
   return (
     <>
-      {list.map((item, index) => {
+      {data?.map((item, index) => {
         return (
           <div key={index}>
             <h1>
