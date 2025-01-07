@@ -34,8 +34,10 @@ export default function Home({
     }[]
   >([]);
   const [room, setRoom] = useState("");
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [success1, setSuccess1] = useState("");
+  const [error1, setError1] = useState("");
+  const [success2, setSuccess2] = useState("");
+  const [error2, setError2] = useState("");
 
   const handleAdd = async (formData: FormData) => {
     const data = Object.fromEntries(formData.entries());
@@ -54,18 +56,49 @@ export default function Home({
     };
 
     if (response.result.error) {
-      setError(response.result.error);
-      setSuccess("");
+      setError1(response.result.error);
+      setSuccess1("");
       console.log(response.result.error);
       return;
     }
 
     if (response.result.success) {
-      setSuccess(response.result.success);
+      setSuccess1(response.result.success);
       console.log(response.result.success);
     }
 
-    setError("");
+    setError1("");
+  };
+
+  const handleDelete = async (formData: FormData) => {
+    const data = Object.fromEntries(formData.entries());
+    data["room"] = room;
+
+    const res = await fetch("/api/item", {
+      method: "DELETE",
+      body: JSON.stringify({
+        data,
+      }),
+    });
+
+    const response = (await res.json()) as {
+      status: number;
+      result: { error?: string; success?: string };
+    };
+
+    if (response.result.error) {
+      setError2(response.result.error);
+      setSuccess2("");
+      console.log(response.result.error);
+      return;
+    }
+
+    if (response.result.success) {
+      setSuccess2(response.result.success);
+      console.log(response.result.success);
+    }
+
+    setError2("");
   };
 
   useEffect(() => {
@@ -176,8 +209,8 @@ export default function Home({
                       type="text"
                       placeholder="Potato"
                       onChange={() => {
-                        setError("");
-                        setSuccess("");
+                        setError1("");
+                        setSuccess1("");
                       }}
                     />
                   </div>
@@ -189,8 +222,8 @@ export default function Home({
                       type="number"
                       placeholder="10"
                       onChange={() => {
-                        setError("");
-                        setSuccess("");
+                        setError1("");
+                        setSuccess1("");
                       }}
                     />
                   </div>
@@ -204,20 +237,20 @@ export default function Home({
                       type="text"
                       placeholder="Person"
                       onChange={() => {
-                        setError("");
-                        setSuccess("");
+                        setError1("");
+                        setSuccess1("");
                       }}
                     />
                   </div>
                 </div>
-                {error && (
+                {error1 && (
                   <div className="text-red-400 font-bold text-center">
-                    {error}
+                    {error1}
                   </div>
                 )}
-                {success && (
+                {success1 && (
                   <div className="text-green-400 font-bold text-center">
-                    {success}
+                    {success1}
                   </div>
                 )}
                 <DialogFooter>
@@ -238,7 +271,13 @@ export default function Home({
                   name.
                 </DialogDescription>
               </DialogHeader>
-              <form className="flex flex-col gap-4">
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target as HTMLFormElement);
+                  handleDelete(formData);
+                }}>
                 <div>
                   <div className="flex flex-col gap-2">
                     <Label>Item</Label>
@@ -247,6 +286,10 @@ export default function Home({
                       name={`item`}
                       type="text"
                       placeholder="Potato"
+                      onChange={() => {
+                        setError2("");
+                        setSuccess2("");
+                      }}
                     />
                   </div>
                 </div>
@@ -258,9 +301,23 @@ export default function Home({
                       name={`name`}
                       type="text"
                       placeholder="Person"
+                      onChange={() => {
+                        setError2("");
+                        setSuccess2("");
+                      }}
                     />
                   </div>
                 </div>
+                {error2 && (
+                  <div className="text-red-400 font-bold text-center">
+                    {error2}
+                  </div>
+                )}
+                {success2 && (
+                  <div className="text-green-400 font-bold text-center">
+                    {success2}
+                  </div>
+                )}
                 <DialogFooter>
                   <Button type="submit">Remove it</Button>
                 </DialogFooter>
