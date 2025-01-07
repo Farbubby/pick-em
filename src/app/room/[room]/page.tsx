@@ -124,7 +124,7 @@ export default function Home({
             <div>{item.name}</div>
             {parseInt(item.amount) > 0 ? (
               <>
-                <div>(x{item.amount})</div>
+                <div>x{item.amount} left</div>
               </>
             ) : (
               <>EMPTY</>

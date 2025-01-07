@@ -62,6 +62,22 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const person = await supabase
+    .from("person")
+    .select("*")
+    .eq("name", data.name)
+    .eq("room", data.room)
+    .eq("item", data.item);
+
+  if ((person.data?.length as number) > 0) {
+    return NextResponse.json({
+      status: 400,
+      result: {
+        error: "Person already exists. Pick a different name",
+      },
+    });
+  }
+
   await supabase.from("person").insert([
     {
       name: data.name,
