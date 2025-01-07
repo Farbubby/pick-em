@@ -40,7 +40,10 @@ export default function Home({ room, item }: { room: string; item: string }) {
       {list.map((item, index) => {
         return (
           <div key={index}>
-            <h1>{item.name}</h1>
+            <h1>
+              {item.name}{" "}
+              <span className="text-blue-500">(x{item.amount})</span>
+            </h1>
           </div>
         );
       })}
