@@ -32,6 +32,18 @@ export async function POST(req: NextRequest) {
   const items = [];
 
   for (let i = 0; i < num; i++) {
+    if (
+      isNaN(parseInt(data[`amount-${i}`])) ||
+      parseInt(data[`amount-${i}`]) <= 0
+    ) {
+      return NextResponse.json({
+        status: 400,
+        result: {
+          error: "Some of the inputs are invalid or less than 0",
+        },
+      });
+    }
+
     items[i] = {
       name: data[`item-${i}`],
       amount: data[`amount-${i}`],

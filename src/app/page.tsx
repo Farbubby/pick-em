@@ -126,6 +126,7 @@ export default function Home() {
               </DialogHeader>
               <form
                 className="flex flex-col gap-4"
+                noValidate
                 onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.target as HTMLFormElement);
@@ -153,7 +154,7 @@ export default function Home() {
                         <Input
                           id={`amount-${i}`}
                           name={`amount-${i}`}
-                          type="number"
+                          type="text"
                           placeholder="10"
                           onChange={() => {
                             setFormError("");

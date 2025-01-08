@@ -51,6 +51,15 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  if (isNaN(parseInt(data.amount)) || parseInt(data.amount) <= 0) {
+    return NextResponse.json({
+      status: 400,
+      result: {
+        error: "Amount is invalid or less than 0",
+      },
+    });
+  }
+
   const diff = parseInt(item.data?.[0].amount) - parseInt(data.amount);
 
   if (diff < 0) {

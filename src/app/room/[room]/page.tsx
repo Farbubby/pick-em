@@ -195,7 +195,7 @@ export default function Home({
                     <Input
                       id={`amount`}
                       name={`amount`}
-                      type="number"
+                      type="text"
                       placeholder="10"
                       onChange={() => {
                         setError1("");
