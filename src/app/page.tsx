@@ -125,7 +125,7 @@ export default function Home() {
                 </DialogDescription>
               </DialogHeader>
               <form
-                className="flex flex-col gap-4"
+                className="flex flex-col gap-4 overflow-y-scroll h-96"
                 noValidate
                 onSubmit={(e) => {
                   e.preventDefault();
