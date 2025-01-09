@@ -51,8 +51,8 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="text-2xl font-bold">
+      <div className="flex flex-col items-center gap-4 px-4">
+        <div className="text-2xl font-bold text-center">
           How many items do you want to bring?
         </div>
         <form
@@ -117,7 +117,7 @@ export default function Home() {
                 List your items
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] max-w-[325px]">
               <DialogHeader>
                 <DialogTitle>Items</DialogTitle>
                 <DialogDescription>
