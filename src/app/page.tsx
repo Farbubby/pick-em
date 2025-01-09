@@ -117,7 +117,7 @@ export default function Home() {
                 List your items
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] max-w-[325px]">
+            <DialogContent className="sm:max-w-[450px] max-w-[325px]">
               <DialogHeader>
                 <DialogTitle>Items</DialogTitle>
                 <DialogDescription>
