@@ -15,6 +15,15 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -30,6 +39,8 @@ export default function Home({
   const queryClient = useQueryClient();
 
   const [room, setRoom] = useState("");
+  const [item, setItem] = useState("");
+  const [item2, setItem2] = useState("");
   const [success1, setSuccess1] = useState("");
   const [error1, setError1] = useState("");
   const [success2, setSuccess2] = useState("");
@@ -169,6 +180,7 @@ export default function Home({
                 onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.target as HTMLFormElement);
+                  formData.append("item", item);
                   addMutation.mutate(formData);
 
                   if (addMutation.data?.result.error) {
@@ -184,20 +196,36 @@ export default function Home({
                   setError1("");
                 }}>
                 <div className="w-full flex flex-row gap-5">
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 w-full">
                     <Label>Item</Label>
-                    <Input
-                      id={`item`}
-                      name={`item`}
-                      type="text"
-                      placeholder="Potato"
-                      onChange={() => {
-                        setError1("");
-                        setSuccess1("");
-                      }}
-                    />
+                    <Select
+                      onValueChange={(value) => {
+                        setItem(value);
+                      }}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an item" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel className="border-b">Items</SelectLabel>
+                          {listQuery.data?.map((item, index) => (
+                            <>
+                              {parseInt(item.amount) > 0 ? (
+                                <SelectItem
+                                  key={`option-add-${index}`}
+                                  value={item.name}>
+                                  {item.name}
+                                </SelectItem>
+                              ) : (
+                                <></>
+                              )}
+                            </>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 w-full">
                     <Label>Amount</Label>
                     <Input
                       id={`amount`}
@@ -259,6 +287,7 @@ export default function Home({
                 onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.target as HTMLFormElement);
+                  formData.append("item", item2);
                   deleteMutation.mutate(formData);
 
                   if (deleteMutation.data?.result.error) {
@@ -276,16 +305,28 @@ export default function Home({
                 <div>
                   <div className="flex flex-col gap-2">
                     <Label>Item</Label>
-                    <Input
-                      id={`item`}
-                      name={`item`}
-                      type="text"
-                      placeholder="Potato"
-                      onChange={() => {
-                        setError2("");
-                        setSuccess2("");
-                      }}
-                    />
+                    <Select
+                      onValueChange={(value) => {
+                        setItem2(value);
+                      }}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an item" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel className="border-b">Items</SelectLabel>
+                          {listQuery.data?.map((item, index) => (
+                            <>
+                              <SelectItem
+                                key={`option-del-${index}`}
+                                value={item.name}>
+                                {item.name}
+                              </SelectItem>
+                            </>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div>
