@@ -13,41 +13,33 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { AuthContext } from "@/components/auth-context";
+import { useContext } from "react";
 
 export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const [itemCount, setItemCount] = useState("");
   const [error, setError] = useState("");
-  const [formError, setFormError] = useState("");
-  const [link, setLink] = useState("");
+  const { userId } = useContext(AuthContext);
 
-  const handleSubmit = async (formData: FormData) => {
-    const data = Object.fromEntries(formData.entries());
-
-    const res = await fetch("/api/item-list", {
-      method: "POST",
-      body: JSON.stringify({
-        data,
-      }),
-    });
-
-    const response = (await res.json()) as {
-      status: number;
-      result: { error?: string; link?: string; success?: string };
-    };
-
-    if (response.result.error) {
-      setFormError(response.result.error);
-      setLink("");
-      return;
-    }
-
-    if (response.result.link) {
-      setLink(response.result.link);
-    }
-
-    setFormError("");
-  };
+  const listMutation = useMutation({
+    mutationKey: ["list"],
+    mutationFn: async (formData: FormData) => {
+      const data = Object.fromEntries(formData.entries());
+      data["user_id"] = userId;
+      const res = await fetch("/api/item-list", {
+        method: "POST",
+        body: JSON.stringify({
+          data,
+        }),
+      });
+      return (await res.json()) as {
+        status: number;
+        result: { error?: string; link?: string; success?: string };
+      };
+    },
+  });
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
@@ -86,9 +78,6 @@ export default function Home() {
             onChange={(e) => {
               setItemCount(e.target.value);
               setSubmitted(false);
-              setError("");
-              setFormError("");
-              setLink("");
             }}
           />
           <button
@@ -129,8 +118,9 @@ export default function Home() {
                 noValidate
                 onSubmit={(e) => {
                   e.preventDefault();
-                  const formData = new FormData(e.target as HTMLFormElement);
-                  handleSubmit(formData);
+                  listMutation.mutate(
+                    new FormData(e.target as HTMLFormElement)
+                  );
                 }}>
                 {Array.from({ length: parseInt(itemCount) }, (_, i) => (
                   <div key={i} className="flex flex-row gap-10 items-center">
@@ -143,10 +133,6 @@ export default function Home() {
                           name={`item-${i}`}
                           type="text"
                           placeholder="Name"
-                          onChange={() => {
-                            setFormError("");
-                            setLink("");
-                          }}
                         />
                       </div>
                       <div className="flex flex-col gap-2">
@@ -156,26 +142,22 @@ export default function Home() {
                           name={`amount-${i}`}
                           type="text"
                           placeholder="10"
-                          onChange={() => {
-                            setFormError("");
-                            setLink("");
-                          }}
                         />
                       </div>
                     </div>
                   </div>
                 ))}
-                {formError && (
+                {listMutation.data?.result.error && (
                   <div className="text-red-400 font-bold text-center">
-                    {formError}
+                    {listMutation.data.result.error}
                   </div>
                 )}
-                {link && (
+                {listMutation.data?.result.link && (
                   <>
                     <div className="font-bold text-center">
                       Click this{" "}
                       <a
-                        href={link}
+                        href={listMutation.data.result.link}
                         target="_blank"
                         rel="noreferrer"
                         className="text-green-400">

@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   const token = crypto.getRandomValues(new Uint8Array(16)).join("");
   const link = `${process.env.NEXT_PUBLIC_URL}/room/${token}`;
 
-  const num = Object.keys(data).length / 2;
+  const num = (Object.keys(data).length - 1) / 2;
   const items = [];
 
   for (let i = 0; i < num; i++) {
@@ -52,6 +52,8 @@ export async function POST(req: NextRequest) {
   }
 
   await supabase.from("item").insert([...items]);
+
+  await supabase.from("link").insert([{ user_id: data["user_id"], url: link }]);
 
   return NextResponse.json({
     status: 200,
