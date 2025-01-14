@@ -43,7 +43,31 @@ export default function Home({
   const [room, setRoom] = useState("");
   const [item1, setItem1] = useState("");
   const [item2, setItem2] = useState("");
+  const [name, setName] = useState("");
   const { userId } = useContext(AuthContext);
+
+  const contributionQuery = useQuery({
+    queryKey: ["contribution", room, item2],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/contribution?room=${room}&item=${item2}&user_id=${userId}`
+      );
+      const data = (await res.json()) as {
+        status: number;
+        result: {
+          data: {
+            id: string;
+            user_id: string;
+            name: string;
+            item: string;
+            amount: string;
+            room: string;
+          }[];
+        };
+      };
+      return data.result.data;
+    },
+  });
 
   const listQuery = useQuery({
     queryKey: ["item-list", room],
@@ -91,6 +115,7 @@ export default function Home({
     mutationFn: async (formData: FormData) => {
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
+      data["name"] = name;
       data["item"] = item2;
       data["user_id"] = userId;
       const res = await fetch("/api/contribution", {
@@ -301,12 +326,28 @@ export default function Home({
                 <div>
                   <div className="flex flex-col gap-2">
                     <Label>Name</Label>
-                    <Input
-                      id={`name`}
-                      name={`name`}
-                      type="text"
-                      placeholder="Person"
-                    />
+                    <Select
+                      onValueChange={(value) => {
+                        setName(value);
+                      }}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a person" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel className="border-b">Person</SelectLabel>
+                          {contributionQuery.data?.map((item, index) => (
+                            <>
+                              <SelectItem
+                                key={`option-del-${index}`}
+                                value={item.name}>
+                                {item.name}
+                              </SelectItem>
+                            </>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 {deleteMutation.data?.result.error && (

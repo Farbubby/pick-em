@@ -197,6 +197,35 @@ export async function GET(req: NextRequest) {
 
   const item = searchParams.get("item");
   const room = searchParams.get("room");
+  const user_id = searchParams.get("user_id");
+
+  if (user_id) {
+    const { data } = await supabase
+      .from("contributor")
+      .select("*")
+      .eq("user_id", user_id)
+      .eq("room", room)
+      .eq("item", item);
+
+    console.log(data);
+
+    if (!data) {
+      return NextResponse.json({
+        status: 404,
+        result: {
+          error: "Not found",
+        },
+      });
+    }
+
+    return NextResponse.json({
+      status: 200,
+      result: {
+        success: "Success",
+        data,
+      },
+    });
+  }
 
   const { data } = await supabase
     .from("contributor")
