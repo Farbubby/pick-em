@@ -38,13 +38,15 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const item = await supabase
+  const { item, amount, room, name, user_id } = data;
+
+  const existingItem = await supabase
     .from("item")
     .select("*")
-    .eq("room", data.room)
-    .eq("name", data.item);
+    .eq("room", room)
+    .eq("name", item);
 
-  if ((item.data?.length as number) <= 0) {
+  if ((existingItem.data?.length as number) <= 0) {
     return NextResponse.json({
       status: 400,
       result: {
@@ -53,7 +55,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  if (isNaN(parseInt(data.amount)) || parseInt(data.amount) <= 0) {
+  if (isNaN(parseInt(amount)) || parseInt(amount) <= 0) {
     return NextResponse.json({
       status: 400,
       result: {
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const diff = parseInt(item.data?.[0].amount) - parseInt(data.amount);
+  const diff = parseInt(existingItem.data?.[0].amount) - parseInt(amount);
 
   if (diff < 0) {
     return NextResponse.json({
@@ -73,14 +75,14 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const person = await supabase
+  const existingPerson = await supabase
     .from("contributor")
     .select("*")
-    .eq("name", data.name)
-    .eq("room", data.room)
-    .eq("item", data.item);
+    .eq("name", name)
+    .eq("room", room)
+    .eq("item", item);
 
-  if ((person.data?.length as number) > 0) {
+  if ((existingPerson.data?.length as number) > 0) {
     return NextResponse.json({
       status: 400,
       result: {
@@ -91,19 +93,19 @@ export async function POST(req: NextRequest) {
 
   await supabase.from("contributor").insert([
     {
-      user_id: data.user_id,
-      name: data.name,
-      item: data.item,
-      amount: data.amount,
-      room: data.room,
+      user_id,
+      name,
+      item,
+      amount,
+      room,
     },
   ]);
 
   await supabase
     .from("item")
     .update({ amount: diff })
-    .eq("name", data.item)
-    .eq("room", data.room);
+    .eq("name", item)
+    .eq("room", room);
 
   return NextResponse.json({
     status: 200,
@@ -134,13 +136,15 @@ export async function DELETE(req: NextRequest) {
     });
   }
 
-  const item = await supabase
+  const { room, user_id, name, item } = data;
+
+  const existingItem = await supabase
     .from("item")
     .select("*")
-    .eq("room", data.room)
-    .eq("name", data.item);
+    .eq("room", room)
+    .eq("name", item);
 
-  if ((item.data?.length as number) <= 0) {
+  if ((existingItem.data?.length as number) <= 0) {
     return NextResponse.json({
       status: 400,
       result: {
@@ -149,15 +153,15 @@ export async function DELETE(req: NextRequest) {
     });
   }
 
-  const person = await supabase
+  const existingPerson = await supabase
     .from("contributor")
     .select("*")
-    .eq("user_id", data.user_id)
-    .eq("room", data.room)
-    .eq("name", data.name)
-    .eq("item", data.item);
+    .eq("user_id", user_id)
+    .eq("room", room)
+    .eq("name", name)
+    .eq("item", item);
 
-  if ((person.data?.length as number) <= 0) {
+  if ((existingPerson.data?.length as number) <= 0) {
     return NextResponse.json({
       status: 400,
       result: {
@@ -167,21 +171,22 @@ export async function DELETE(req: NextRequest) {
   }
 
   const total =
-    parseInt(item.data?.[0].amount) + parseInt(person.data?.[0].amount);
+    parseInt(existingItem.data?.[0].amount) +
+    parseInt(existingPerson.data?.[0].amount);
 
   await supabase
     .from("item")
     .update({ amount: total })
-    .eq("name", data.item)
-    .eq("room", data.room);
+    .eq("name", item)
+    .eq("room", room);
 
   await supabase
     .from("contributor")
     .delete()
-    .eq("user_id", data.user_id)
-    .eq("room", data.room)
-    .eq("name", data.name)
-    .eq("item", data.item);
+    .eq("user_id", user_id)
+    .eq("room", room)
+    .eq("name", name)
+    .eq("item", item);
 
   return NextResponse.json({
     status: 200,

@@ -43,6 +43,7 @@ export default function Home({
   const [room, setRoom] = useState("");
   const [item1, setItem1] = useState("");
   const [item2, setItem2] = useState("");
+  const [item3, setItem3] = useState("");
   const [name, setName] = useState("");
   const [isOwner, setIsOwner] = useState(false);
   const { userId } = useContext(AuthContext);
@@ -156,6 +157,27 @@ export default function Home({
     },
   });
 
+  const deleteAdminMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const data = Object.fromEntries(formData.entries());
+      data["room"] = room;
+      data["item"] = item3;
+      const res = await fetch("/api/admin", {
+        method: "DELETE",
+        body: JSON.stringify({
+          data,
+        }),
+      });
+      return (await res.json()) as {
+        status: number;
+        result: { error?: string; success?: string };
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["item-list", room] });
+    },
+  });
+
   useEffect(() => {
     async function getRoom() {
       const room = (await params).room;
@@ -225,10 +247,10 @@ export default function Home({
             contribute to the item
           </div>
         </div>
-        <div className="w-full flex flex-row justify-center gap-5">
+        <div className="w-4/5 sm:w-3/5 grid grid-cols-2 gap-5 mx-auto">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">Add</Button>
+              <Button variant="outline">Bring</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[450px] max-w-[325px]">
               <DialogHeader>
@@ -305,7 +327,7 @@ export default function Home({
                   </div>
                 )}
                 <DialogFooter>
-                  <Button type="submit">Add it</Button>
+                  <Button type="submit">Bring it</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -450,6 +472,72 @@ export default function Home({
                   {addAdminMutation.data?.result.success && (
                     <div className="text-green-400 font-bold text-center">
                       {addAdminMutation.data.result.success}
+                    </div>
+                  )}
+                  <DialogFooter>
+                    <Button type="submit">Add it</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+          {isOwner && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">Remove Item</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[450px] max-w-[325px]">
+                <DialogHeader>
+                  <DialogTitle>Want to remove an item?</DialogTitle>
+                  <DialogDescription>
+                    Mention the item you want to remove.
+                  </DialogDescription>
+                </DialogHeader>
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    deleteAdminMutation.mutate(
+                      new FormData(e.target as HTMLFormElement)
+                    );
+                  }}>
+                  <div>
+                    <div className="flex flex-col gap-2">
+                      <Label>Item</Label>
+                      <Select
+                        onValueChange={(value) => {
+                          setItem3(value);
+                        }}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select an item" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel className="border-b">
+                              Items
+                            </SelectLabel>
+                            {listQuery.data?.map((item, index) => (
+                              <>
+                                <SelectItem
+                                  key={`option-del-${index}`}
+                                  value={item.name}>
+                                  {item.name}
+                                </SelectItem>
+                              </>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {deleteAdminMutation.data?.result.error && (
+                    <div className="text-red-400 font-bold text-center">
+                      {deleteAdminMutation.data.result.error}
+                    </div>
+                  )}
+                  {deleteAdminMutation.data?.result.success && (
+                    <div className="text-green-400 font-bold text-center">
+                      {deleteAdminMutation.data.result.success}
                     </div>
                   )}
                   <DialogFooter>
