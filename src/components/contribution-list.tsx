@@ -41,11 +41,11 @@ export default function Home({ room, item }: { room: string; item: string }) {
             <h1>
               {person.user_id === userId ? (
                 <div className="text-green-500">
-                  {person.name} (x{person.amount})
+                  {person.name} - x{person.amount} (You)
                 </div>
               ) : (
-                <div>
-                  {person.name} (x{person.amount})
+                <div className="text-red-600">
+                  {person.name} - x{person.amount}
                 </div>
               )}
             </h1>
