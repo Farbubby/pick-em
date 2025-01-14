@@ -136,6 +136,26 @@ export default function Home({
     },
   });
 
+  const addAdminMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const data = Object.fromEntries(formData.entries());
+      data["room"] = room;
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        body: JSON.stringify({
+          data,
+        }),
+      });
+      return (await res.json()) as {
+        status: number;
+        result: { error?: string; success?: string };
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["item-list", room] });
+    },
+  });
+
   useEffect(() => {
     async function getRoom() {
       const room = (await params).room;
@@ -396,7 +416,7 @@ export default function Home({
                   className="flex flex-col gap-4"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    addMutation.mutate(
+                    addAdminMutation.mutate(
                       new FormData(e.target as HTMLFormElement)
                     );
                   }}>
@@ -422,14 +442,14 @@ export default function Home({
                       />
                     </div>
                   </div>
-                  {addMutation.data?.result.error && (
+                  {addAdminMutation.data?.result.error && (
                     <div className="text-red-400 font-bold text-center">
-                      {addMutation.data.result.error}
+                      {addAdminMutation.data.result.error}
                     </div>
                   )}
-                  {addMutation.data?.result.success && (
+                  {addAdminMutation.data?.result.success && (
                     <div className="text-green-400 font-bold text-center">
-                      {addMutation.data.result.success}
+                      {addAdminMutation.data.result.success}
                     </div>
                   )}
                   <DialogFooter>
