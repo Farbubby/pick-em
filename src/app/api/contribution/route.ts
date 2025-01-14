@@ -7,12 +7,14 @@ const addSchema = z.object({
   amount: z.string().min(1, "One of the fields is empty"),
   name: z.string().min(1, "One of the fields is empty"),
   room: z.string(),
+  user_id: z.string(),
 });
 
 const deleteSchema = z.object({
   item: z.string().min(1, "One of the fields is empty"),
   name: z.string().min(1, "One of the fields is empty"),
   room: z.string(),
+  user_id: z.string(),
 });
 
 export async function POST(req: NextRequest) {
@@ -72,7 +74,7 @@ export async function POST(req: NextRequest) {
   }
 
   const person = await supabase
-    .from("person")
+    .from("contributor")
     .select("*")
     .eq("name", data.name)
     .eq("room", data.room)
@@ -87,8 +89,9 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  await supabase.from("person").insert([
+  await supabase.from("contributor").insert([
     {
+      user_id: data.user_id,
       name: data.name,
       item: data.item,
       amount: data.amount,
@@ -147,8 +150,9 @@ export async function DELETE(req: NextRequest) {
   }
 
   const person = await supabase
-    .from("person")
+    .from("contributor")
     .select("*")
+    .eq("user_id", data.user_id)
     .eq("room", data.room)
     .eq("name", data.name)
     .eq("item", data.item);
@@ -172,8 +176,9 @@ export async function DELETE(req: NextRequest) {
     .eq("room", data.room);
 
   await supabase
-    .from("person")
+    .from("contributor")
     .delete()
+    .eq("user_id", data.user_id)
     .eq("room", data.room)
     .eq("name", data.name)
     .eq("item", data.item);
@@ -194,7 +199,7 @@ export async function GET(req: NextRequest) {
   const room = searchParams.get("room");
 
   const { data } = await supabase
-    .from("person")
+    .from("contributor")
     .select("*")
     .eq("item", item)
     .eq("room", room);

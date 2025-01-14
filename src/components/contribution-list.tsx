@@ -1,8 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useContext } from "react";
+import { AuthContext } from "@/components/auth-context";
 
 export default function Home({ room, item }: { room: string; item: string }) {
+  const { userId } = useContext(AuthContext);
+
   const { data } = useQuery({
     queryKey: ["contribution", room, item],
     queryFn: async () => {
@@ -12,6 +16,7 @@ export default function Home({ room, item }: { room: string; item: string }) {
         result: {
           data: {
             id: string;
+            user_id: string;
             name: string;
             item: string;
             amount: string;
@@ -30,12 +35,19 @@ export default function Home({ room, item }: { room: string; item: string }) {
 
   return (
     <>
-      {data?.map((item, index) => {
+      {data?.map((person, index) => {
         return (
           <div key={index}>
             <h1>
-              {item.name}{" "}
-              <span className="text-blue-500">(x{item.amount})</span>
+              {person.user_id === userId ? (
+                <div className="text-green-500">
+                  {person.name} (x{person.amount})
+                </div>
+              ) : (
+                <div>
+                  {person.name} (x{person.amount})
+                </div>
+              )}
             </h1>
           </div>
         );

@@ -30,6 +30,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import ContributionList from "@/components/contribution-list";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { AuthContext } from "@/components/auth-context";
+import { useContext } from "react";
 
 export default function Home({
   params,
@@ -39,12 +41,9 @@ export default function Home({
   const queryClient = useQueryClient();
 
   const [room, setRoom] = useState("");
-  const [item, setItem] = useState("");
+  const [item1, setItem1] = useState("");
   const [item2, setItem2] = useState("");
-  const [success1, setSuccess1] = useState("");
-  const [error1, setError1] = useState("");
-  const [success2, setSuccess2] = useState("");
-  const [error2, setError2] = useState("");
+  const { userId } = useContext(AuthContext);
 
   const listQuery = useQuery({
     queryKey: ["item-list", room],
@@ -69,6 +68,8 @@ export default function Home({
     mutationFn: async (formData: FormData) => {
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
+      data["item"] = item1;
+      data["user_id"] = userId;
       const res = await fetch("/api/contribution", {
         method: "POST",
         body: JSON.stringify({
@@ -90,6 +91,8 @@ export default function Home({
     mutationFn: async (formData: FormData) => {
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
+      data["item"] = item2;
+      data["user_id"] = userId;
       const res = await fetch("/api/contribution", {
         method: "DELETE",
         body: JSON.stringify({
@@ -179,28 +182,14 @@ export default function Home({
                 className="flex flex-col gap-4"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  const formData = new FormData(e.target as HTMLFormElement);
-                  formData.append("item", item);
-                  addMutation.mutate(formData);
-
-                  if (addMutation.data?.result.error) {
-                    setError1(addMutation.data.result.error);
-                    setSuccess1("");
-                    return;
-                  }
-
-                  if (addMutation.data?.result.success) {
-                    setSuccess1("Success");
-                  }
-
-                  setError1("");
+                  addMutation.mutate(new FormData(e.target as HTMLFormElement));
                 }}>
                 <div className="w-full flex flex-row gap-5">
                   <div className="flex flex-col gap-2 w-full">
                     <Label>Item</Label>
                     <Select
                       onValueChange={(value) => {
-                        setItem(value);
+                        setItem1(value);
                       }}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an item" />
@@ -232,10 +221,6 @@ export default function Home({
                       name={`amount`}
                       type="text"
                       placeholder="10"
-                      onChange={() => {
-                        setError1("");
-                        setSuccess1("");
-                      }}
                     />
                   </div>
                 </div>
@@ -247,21 +232,17 @@ export default function Home({
                       name={`name`}
                       type="text"
                       placeholder="Person"
-                      onChange={() => {
-                        setError1("");
-                        setSuccess1("");
-                      }}
                     />
                   </div>
                 </div>
-                {error1 && (
+                {addMutation.data?.result.error && (
                   <div className="text-red-400 font-bold text-center">
-                    {error1}
+                    {addMutation.data.result.error}
                   </div>
                 )}
-                {success1 && (
+                {addMutation.data?.result.success && (
                   <div className="text-green-400 font-bold text-center">
-                    {success1}
+                    {addMutation.data.result.success}
                   </div>
                 )}
                 <DialogFooter>
@@ -286,21 +267,9 @@ export default function Home({
                 className="flex flex-col gap-4"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  const formData = new FormData(e.target as HTMLFormElement);
-                  formData.append("item", item2);
-                  deleteMutation.mutate(formData);
-
-                  if (deleteMutation.data?.result.error) {
-                    setError2(deleteMutation.data.result.error);
-                    setSuccess2("");
-                    return;
-                  }
-
-                  if (deleteMutation.data?.result.success) {
-                    setSuccess2(deleteMutation.data.result.success);
-                  }
-
-                  setError2("");
+                  deleteMutation.mutate(
+                    new FormData(e.target as HTMLFormElement)
+                  );
                 }}>
                 <div>
                   <div className="flex flex-col gap-2">
@@ -337,21 +306,17 @@ export default function Home({
                       name={`name`}
                       type="text"
                       placeholder="Person"
-                      onChange={() => {
-                        setError2("");
-                        setSuccess2("");
-                      }}
                     />
                   </div>
                 </div>
-                {error2 && (
+                {deleteMutation.data?.result.error && (
                   <div className="text-red-400 font-bold text-center">
-                    {error2}
+                    {deleteMutation.data.result.error}
                   </div>
                 )}
-                {success2 && (
+                {deleteMutation.data?.result.success && (
                   <div className="text-green-400 font-bold text-center">
-                    {success2}
+                    {deleteMutation.data.result.success}
                   </div>
                 )}
                 <DialogFooter>
