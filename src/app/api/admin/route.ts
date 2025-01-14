@@ -108,6 +108,8 @@ export async function DELETE(req: NextRequest) {
     });
   }
 
+  await supabase.from("contributor").delete().eq("item", item).eq("room", room);
+
   await supabase.from("item").delete().eq("name", item).eq("room", room);
 
   return NextResponse.json({

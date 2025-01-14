@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = url;
 
   let link = searchParams.get("link");
-  link = `${process.env.NEXT_LOCAL_URL}${link}`;
+  link = `${process.env.NEXT_PUBLIC_URL}${link}`;
 
   const { data } = await supabase.from("link").select("*").eq("url", link);
 

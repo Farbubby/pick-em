@@ -41,15 +41,18 @@ export default function Home({
   const queryClient = useQueryClient();
 
   const [room, setRoom] = useState("");
-  const [item, setItem] = useState("");
+  const [item1, setItem1] = useState("");
+  const [item2, setItem2] = useState("");
+  const [item3, setItem3] = useState("");
+  const [name, setName] = useState("");
   const [isOwner, setIsOwner] = useState(false);
   const { userId } = useContext(AuthContext);
 
   const contributionQuery = useQuery({
-    queryKey: ["contribution", room, item],
+    queryKey: ["contribution", room, item2],
     queryFn: async () => {
       const res = await fetch(
-        `/api/contribution?room=${room}&item=${item}&user_id=${userId}`
+        `/api/contribution?room=${room}&item=${item2}&user_id=${userId}`
       );
       const data = (await res.json()) as {
         status: number;
@@ -92,6 +95,7 @@ export default function Home({
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
       data["user_id"] = userId;
+      data["item"] = item1;
       const res = await fetch("/api/contribution", {
         method: "POST",
         body: JSON.stringify({
@@ -104,6 +108,7 @@ export default function Home({
       };
     },
     onSuccess: () => {
+      setItem1("");
       queryClient.invalidateQueries({ queryKey: ["contribution"] });
       queryClient.invalidateQueries({ queryKey: ["item-list"] });
     },
@@ -114,6 +119,8 @@ export default function Home({
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
       data["user_id"] = userId;
+      data["name"] = name;
+      data["item"] = item2;
       const res = await fetch("/api/contribution", {
         method: "DELETE",
         body: JSON.stringify({
@@ -126,6 +133,8 @@ export default function Home({
       };
     },
     onSuccess: () => {
+      setItem2("");
+      setName("");
       queryClient.invalidateQueries({ queryKey: ["contribution"] });
       queryClient.invalidateQueries({ queryKey: ["item-list"] });
     },
@@ -155,6 +164,7 @@ export default function Home({
     mutationFn: async (formData: FormData) => {
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
+      data["item"] = item3;
       const res = await fetch("/api/admin", {
         method: "DELETE",
         body: JSON.stringify({
@@ -167,6 +177,7 @@ export default function Home({
       };
     },
     onSuccess: () => {
+      setItem3("");
       queryClient.invalidateQueries({ queryKey: ["item-list"] });
     },
   });
@@ -240,10 +251,10 @@ export default function Home({
             contribute to the item
           </div>
         </div>
-        <div className="w-4/5 sm:w-3/5 grid grid-cols-2 gap-5 mx-auto">
+        <div className="w-4/5 sm:w-3/5 grid sm:grid-cols-2  grid-cols-1 gap-5 mx-auto">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">Bring</Button>
+              <Button variant="outline">Bring something</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[450px] max-w-[325px]">
               <DialogHeader>
@@ -261,7 +272,10 @@ export default function Home({
                 <div className="w-full flex flex-row gap-5">
                   <div className="flex flex-col gap-2 w-full">
                     <Label>Item</Label>
-                    <Select name="item">
+                    <Select
+                      name="item1"
+                      value={item1}
+                      onValueChange={(value) => setItem1(value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an item" />
                       </SelectTrigger>
@@ -324,7 +338,7 @@ export default function Home({
           </Dialog>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">Remove</Button>
+              <Button variant="outline">Remove something</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[450px] max-w-[325px]">
               <DialogHeader>
@@ -346,9 +360,10 @@ export default function Home({
                   <div className="flex flex-col gap-2">
                     <Label>Item</Label>
                     <Select
-                      name="item"
+                      name="item2"
+                      value={item2}
                       onValueChange={(value) => {
-                        setItem(value);
+                        setItem2(value);
                       }}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an item" />
@@ -373,7 +388,10 @@ export default function Home({
                 <div>
                   <div className="flex flex-col gap-2">
                     <Label>Name</Label>
-                    <Select name="name">
+                    <Select
+                      name="name"
+                      value={name}
+                      onValueChange={(value) => setName(value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a person" />
                       </SelectTrigger>
@@ -492,7 +510,12 @@ export default function Home({
                   <div>
                     <div className="flex flex-col gap-2">
                       <Label>Item</Label>
-                      <Select name="item">
+                      <Select
+                        name="item3"
+                        value={item3}
+                        onValueChange={(value) => {
+                          setItem3(value);
+                        }}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select an item" />
                         </SelectTrigger>
@@ -526,7 +549,7 @@ export default function Home({
                     </div>
                   )}
                   <DialogFooter>
-                    <Button type="submit">Add it</Button>
+                    <Button type="submit">Remove it</Button>
                   </DialogFooter>
                 </form>
               </DialogContent>
