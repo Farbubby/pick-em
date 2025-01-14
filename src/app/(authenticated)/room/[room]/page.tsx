@@ -44,6 +44,7 @@ export default function Home({
   const [item1, setItem1] = useState("");
   const [item2, setItem2] = useState("");
   const [name, setName] = useState("");
+  const [isOwner, setIsOwner] = useState(false);
   const { userId } = useContext(AuthContext);
 
   const contributionQuery = useQuery({
@@ -140,8 +141,21 @@ export default function Home({
       const room = (await params).room;
       setRoom(room);
     }
+
+    async function checkOwner() {
+      const link = `${window.location.pathname}`;
+      const res = await fetch(`/api/owner?link=${link}`);
+
+      const user = (await res.json()) as {
+        status: number;
+        result: { data: { id: string; user_id: string }[] };
+      };
+
+      setIsOwner(user.result.data[0].user_id === userId);
+    }
     getRoom();
-  }, [params]);
+    checkOwner();
+  }, [params, userId, room]);
 
   if (listQuery.isLoading) {
     return <div>Loading...</div>;
@@ -366,6 +380,65 @@ export default function Home({
               </form>
             </DialogContent>
           </Dialog>
+          {isOwner && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">Add Item</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[450px] max-w-[325px]">
+                <DialogHeader>
+                  <DialogTitle>Want to add an item?</DialogTitle>
+                  <DialogDescription>
+                    Mention the item you want to add and the amount of it.
+                  </DialogDescription>
+                </DialogHeader>
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    addMutation.mutate(
+                      new FormData(e.target as HTMLFormElement)
+                    );
+                  }}>
+                  <div>
+                    <div className="flex flex-col gap-2">
+                      <Label>Item</Label>
+                      <Input
+                        id={`item`}
+                        name={`item`}
+                        type="text"
+                        placeholder="Item"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex flex-col gap-2">
+                      <Label>Amount</Label>
+                      <Input
+                        id={`amount`}
+                        name={`amount`}
+                        type="text"
+                        placeholder="10"
+                      />
+                    </div>
+                  </div>
+                  {addMutation.data?.result.error && (
+                    <div className="text-red-400 font-bold text-center">
+                      {addMutation.data.result.error}
+                    </div>
+                  )}
+                  {addMutation.data?.result.success && (
+                    <div className="text-green-400 font-bold text-center">
+                      {addMutation.data.result.success}
+                    </div>
+                  )}
+                  <DialogFooter>
+                    <Button type="submit">Add it</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
     </>
