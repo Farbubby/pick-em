@@ -41,18 +41,15 @@ export default function Home({
   const queryClient = useQueryClient();
 
   const [room, setRoom] = useState("");
-  const [item1, setItem1] = useState("");
-  const [item2, setItem2] = useState("");
-  const [item3, setItem3] = useState("");
-  const [name, setName] = useState("");
+  const [item, setItem] = useState("");
   const [isOwner, setIsOwner] = useState(false);
   const { userId } = useContext(AuthContext);
 
   const contributionQuery = useQuery({
-    queryKey: ["contribution", room, item2],
+    queryKey: ["contribution", room, item],
     queryFn: async () => {
       const res = await fetch(
-        `/api/contribution?room=${room}&item=${item2}&user_id=${userId}`
+        `/api/contribution?room=${room}&item=${item}&user_id=${userId}`
       );
       const data = (await res.json()) as {
         status: number;
@@ -94,7 +91,6 @@ export default function Home({
     mutationFn: async (formData: FormData) => {
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
-      data["item"] = item1;
       data["user_id"] = userId;
       const res = await fetch("/api/contribution", {
         method: "POST",
@@ -108,8 +104,8 @@ export default function Home({
       };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contribution", room] });
-      queryClient.invalidateQueries({ queryKey: ["item-list", room] });
+      queryClient.invalidateQueries({ queryKey: ["contribution"] });
+      queryClient.invalidateQueries({ queryKey: ["item-list"] });
     },
   });
 
@@ -117,8 +113,6 @@ export default function Home({
     mutationFn: async (formData: FormData) => {
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
-      data["name"] = name;
-      data["item"] = item2;
       data["user_id"] = userId;
       const res = await fetch("/api/contribution", {
         method: "DELETE",
@@ -132,8 +126,8 @@ export default function Home({
       };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contribution", room] });
-      queryClient.invalidateQueries({ queryKey: ["item-list", room] });
+      queryClient.invalidateQueries({ queryKey: ["contribution"] });
+      queryClient.invalidateQueries({ queryKey: ["item-list"] });
     },
   });
 
@@ -153,7 +147,7 @@ export default function Home({
       };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["item-list", room] });
+      queryClient.invalidateQueries({ queryKey: ["item-list"] });
     },
   });
 
@@ -161,7 +155,6 @@ export default function Home({
     mutationFn: async (formData: FormData) => {
       const data = Object.fromEntries(formData.entries());
       data["room"] = room;
-      data["item"] = item3;
       const res = await fetch("/api/admin", {
         method: "DELETE",
         body: JSON.stringify({
@@ -174,7 +167,7 @@ export default function Home({
       };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["item-list", room] });
+      queryClient.invalidateQueries({ queryKey: ["item-list"] });
     },
   });
 
@@ -268,10 +261,7 @@ export default function Home({
                 <div className="w-full flex flex-row gap-5">
                   <div className="flex flex-col gap-2 w-full">
                     <Label>Item</Label>
-                    <Select
-                      onValueChange={(value) => {
-                        setItem1(value);
-                      }}>
+                    <Select name="item">
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an item" />
                       </SelectTrigger>
@@ -356,8 +346,9 @@ export default function Home({
                   <div className="flex flex-col gap-2">
                     <Label>Item</Label>
                     <Select
+                      name="item"
                       onValueChange={(value) => {
-                        setItem2(value);
+                        setItem(value);
                       }}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an item" />
@@ -382,10 +373,7 @@ export default function Home({
                 <div>
                   <div className="flex flex-col gap-2">
                     <Label>Name</Label>
-                    <Select
-                      onValueChange={(value) => {
-                        setName(value);
-                      }}>
+                    <Select name="name">
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a person" />
                       </SelectTrigger>
@@ -504,10 +492,7 @@ export default function Home({
                   <div>
                     <div className="flex flex-col gap-2">
                       <Label>Item</Label>
-                      <Select
-                        onValueChange={(value) => {
-                          setItem3(value);
-                        }}>
+                      <Select name="item">
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select an item" />
                         </SelectTrigger>
