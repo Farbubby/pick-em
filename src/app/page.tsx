@@ -13,8 +13,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const router = useRouter();
+
   const signUp = useMutation({
     mutationKey: ["sign-up"],
     mutationFn: async (formData: FormData) => {
@@ -60,13 +64,15 @@ export default function Home() {
     },
   });
 
-  if (signUp.data?.result.success) {
-    console.log("Sign up successful");
-  }
+  useEffect(() => {
+    if (signUp.data?.result.success) {
+      router.push("/main");
+    }
 
-  if (signIn.data?.result.success) {
-    console.log("Sign in successful");
-  }
+    if (signIn.data?.result.success) {
+      router.push("/main");
+    }
+  }, [signUp.data, signIn.data, router]);
 
   return (
     <>
